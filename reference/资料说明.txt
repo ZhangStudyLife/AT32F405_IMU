@@ -1,0 +1,7 @@
+资料分类：
+datasheets：AT32F405/402、LSM6DSV16X、CSD13380F3 数据手册。
+manufacturing：原有 Gerber、钢网文件与交互式 BOM，仅搬移，未重新生成。
+validation：新板六轴读取成功的原始日志、采样 CSV，以及整理后的编译日志。
+
+硬件编辑入口：../hardware/AT32F405_IMU.kicad_pro
+软件编辑入口：../software/imu_readout.uvprojx
