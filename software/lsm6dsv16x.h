@@ -1,9 +1,19 @@
 #ifndef LSM6DSV16X_H
 #define LSM6DSV16X_H
-#include "at32f402_405.h"
-
-void imu_spi_init(void);
-uint8_t imu_reg_read(uint8_t reg);
-void imu_reg_write(uint8_t reg, uint8_t value);
-int imu_read(int16_t gyro[3], int16_t accel[3]);
+#include "platform.h"
+typedef struct {
+    uint32_t time_us, edge_cycles;
+    int16_t gyro[3], accel[3];
+} ImuSample;
+typedef struct {
+    uint32_t id, phase, error, dma_timeouts, dma_errors, drdy_count, overlaps;
+    uint32_t config_index;
+} SensorStatus;
+extern SensorStatus sensor_status;
+void sensor_init(void);
+void sensor_stop(void);
+int sensor_poll(ImuSample *sample); /* 1=new frame, 0=pending, -1=fault */
+#ifdef IMU_TEST
+extern volatile uint32_t test_fault; /* 1=no samples, 2=DMA never completes */
+#endif
 #endif
