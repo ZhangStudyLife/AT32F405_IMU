@@ -13,6 +13,10 @@
  *
  * 本文件中的第三方代码，其版权和许可证以原始声明及对应目录的 LICENSE 为准。
  */
+/* AT32 optimization: shared PT1 gain, one accel normalization, direct Euler
+ * output. Original gains, gates, exponential quaternion step and validation
+ * are retained. No fast inverse-square-root or approximate trig functions. */
+#pragma STDC FP_CONTRACT OFF
 #include "MahonyAhrs.h"
 
 #include <math.h>
@@ -54,19 +58,10 @@ static float Mahony_ApplyDeadband(float value, float deadband)
     return value;
 }
 
-static uint8_t Mahony_IsFinite(float value)
+static inline uint8_t Mahony_IsFinite(float value)
 {
-    if (value != value)
-    {
-        return 0U;
-    }
-
-    if ((value > 1000000.0f) || (value < -1000000.0f))
-    {
-        return 0U;
-    }
-
-    return 1U;
+    /* Ordered comparisons reject NaN and infinity without fast-math. */
+    return fabsf(value) <= 1000000.0f;
 }
 
 static float Mahony_VectorMagnitudeSquared(float x, float y, float z)
@@ -84,22 +79,6 @@ static float Mahony_VectorMagnitude(float x, float y, float z)
     }
 
     return sqrtf(mag_sq);
-}
-
-static uint8_t Mahony_NormalizeVector3(float *x, float *y, float *z)
-{
-    float norm = Mahony_VectorMagnitude(*x, *y, *z);
-
-    if (norm < MAHONY_VECTOR_NORM_MIN)
-    {
-        return 0U;
-    }
-
-    norm = 1.0f / norm;
-    *x *= norm;
-    *y *= norm;
-    *z *= norm;
-    return 1U;
 }
 
 static void Mahony_QuaternionNormalize(float *q0, float *q1, float *q2, float *q3)
@@ -126,35 +105,9 @@ static uint8_t Mahony_QuaternionIsValid(float q0, float q1, float q2, float q3)
 {
     float norm_sq;
 
-    if ((0U == Mahony_IsFinite(q0)) || (0U == Mahony_IsFinite(q1)) ||
-        (0U == Mahony_IsFinite(q2)) || (0U == Mahony_IsFinite(q3)))
-    {
-        return 0U;
-    }
-
+    /* The squared norm rejects NaN/Inf and out-of-range components too. */
     norm_sq = q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3;
-    if ((norm_sq < 0.5f) || (norm_sq > 1.5f))
-    {
-        return 0U;
-    }
-
-    return 1U;
-}
-
-static float Mahony_Pt1Update(float state, float input, float cutoff_hz, float dt)
-{
-    float alpha;
-    float rc;
-
-    if ((cutoff_hz <= 0.0f) || (dt <= 0.0f))
-    {
-        return input;
-    }
-
-    rc = 1.0f / (2.0f * 3.14159265359f * cutoff_hz);
-    alpha = dt / (rc + dt);
-    alpha = Mahony_Clamp(alpha, 0.0f, 1.0f);
-    return state + alpha * (input - state);
+    return norm_sq >= 0.5f && norm_sq <= 1.5f;
 }
 
 static void Mahony_UpdateStaticState(MahonyAhrs_t *ahrs, float gyro_abs_dps, float accel_mag)
@@ -179,13 +132,6 @@ static void Mahony_UpdateStaticState(MahonyAhrs_t *ahrs, float gyro_abs_dps, flo
     }
 
     ahrs->is_static = (ahrs->static_count >= MAHONY_STATIC_LOCK_COUNT) ? 1U : 0U;
-}
-
-static float Mahony_GetFastGainScale(const MahonyAhrs_t *ahrs)
-{
-    /* Pinned source configuration disables fast gain (scale=1, window=0). */
-    (void)ahrs;
-    return 1.0f;
 }
 
 static float Mahony_CalculateAccelWeightNearness(float accel_mag)
@@ -219,16 +165,6 @@ static float Mahony_CalculateAccelWeightRateIgnore(const MahonyAhrs_t *ahrs)
     }
 
     return 1.0f - (gyro_rate_dps - gate_start) / MAHONY_ACCEL_IGNORE_SLOPE_DPS;
-}
-
-static void Mahony_GetEstimatedGravityBody(const MahonyAhrs_t *ahrs,
-                                           float *gx,
-                                           float *gy,
-                                           float *gz)
-{
-    *gx = 2.0f * (ahrs->q1 * ahrs->q3 - ahrs->q0 * ahrs->q2);
-    *gy = 2.0f * (ahrs->q0 * ahrs->q1 + ahrs->q2 * ahrs->q3);
-    *gz = ahrs->q0 * ahrs->q0 - ahrs->q1 * ahrs->q1 - ahrs->q2 * ahrs->q2 + ahrs->q3 * ahrs->q3;
 }
 
 static void Mahony_ResetQuaternionFromGravity(MahonyAhrs_t *ahrs,
@@ -298,28 +234,20 @@ void MahonyAhrs_Init(MahonyAhrs_t *ahrs)
     ahrs->q2 = 0.0f;
     ahrs->q3 = 0.0f;
 
-    ahrs->gyro_bias_x = 0.0f;
-    ahrs->gyro_bias_y = 0.0f;
-    ahrs->gyro_bias_z = 0.0f;
     ahrs->gyro_bias_z_static = 0.0f;
 
     ahrs->integral_fbx = 0.0f;
     ahrs->integral_fby = 0.0f;
-    ahrs->integral_fbz = 0.0f;
 
     ahrs->gyro_lpf_x = 0.0f;
     ahrs->gyro_lpf_y = 0.0f;
     ahrs->gyro_lpf_z = 0.0f;
-    ahrs->elapsed_time_s = 0.0f;
 
     ahrs->kp = MAHONY_KP_DEFAULT;
     ahrs->ki = MAHONY_KI_DEFAULT;
 
     ahrs->update_count = 0U;
-    ahrs->accel_magnitude = 0.0f;
-    ahrs->acc_weight_nearness = 0.0f;
-    ahrs->acc_weight_rate_ignore = 0.0f;
-    ahrs->acc_weight_final = 0.0f;
+
     ahrs->static_count = 0U;
     ahrs->is_static = 0U;
     ahrs->gyro_lpf_ready = 0U;
@@ -351,7 +279,6 @@ void MahonyAhrs_Update(MahonyAhrs_t *ahrs,
     float gravity_y = 0.0f;
     float gravity_z = 0.0f;
     uint8_t acc_valid = 0U;
-    uint8_t use_acc = 0U;
 
     /* Port: reject invalid samples before any state is modified. */
     if (!Mahony_IsFinite(dt) || dt <= 0.0f ||
@@ -361,16 +288,10 @@ void MahonyAhrs_Update(MahonyAhrs_t *ahrs,
         return;
     }
 
-    ahrs->elapsed_time_s += dt;
-
     /* 先统计当前加速度模长与静止状态，再决定后续权重与 bias 学习 */
 
     // 算模长
     accel_mag = Mahony_VectorMagnitude(accel_x, accel_y, accel_z);
-    ahrs->accel_magnitude = accel_mag;
-    ahrs->acc_weight_nearness = 0.0f;
-    ahrs->acc_weight_rate_ignore = 0.0f;
-    ahrs->acc_weight_final = 0.0f;
 
     // 模长和陀螺绝对值用于静止判定
     gyro_abs_dps = Mahony_VectorMagnitude(gyro_x, gyro_y, gyro_z);
@@ -390,16 +311,18 @@ void MahonyAhrs_Update(MahonyAhrs_t *ahrs,
     }
     else
     {
-        ahrs->gyro_lpf_x = Mahony_Pt1Update(ahrs->gyro_lpf_x, measured_gx, MAHONY_ROTATION_LPF_HZ, dt);
-        ahrs->gyro_lpf_y = Mahony_Pt1Update(ahrs->gyro_lpf_y, measured_gy, MAHONY_ROTATION_LPF_HZ, dt);
-        ahrs->gyro_lpf_z = Mahony_Pt1Update(ahrs->gyro_lpf_z, measured_gz, MAHONY_ROTATION_LPF_HZ, dt);
+        /* Same positive dt and fixed cutoff on all three axes. */
+        float alpha = dt / (1.0f / (2.0f * 3.14159265359f * MAHONY_ROTATION_LPF_HZ) + dt);
+        ahrs->gyro_lpf_x += alpha * (measured_gx - ahrs->gyro_lpf_x);
+        ahrs->gyro_lpf_y += alpha * (measured_gy - ahrs->gyro_lpf_y);
+        ahrs->gyro_lpf_z += alpha * (measured_gz - ahrs->gyro_lpf_z);
     }
 
     if (ahrs->is_static != 0U)
     {
         ahrs->gyro_bias_z_static += MAHONY_STATIC_BIAS_Z_ALPHA * (measured_gz - ahrs->gyro_bias_z_static);
         ahrs->gyro_bias_z_static = Mahony_Clamp(ahrs->gyro_bias_z_static, -integral_limit, integral_limit);
-        ahrs->gyro_bias_z = ahrs->gyro_bias_z_static;
+
     }
 
     prev_q0 = ahrs->q0;
@@ -414,9 +337,10 @@ void MahonyAhrs_Update(MahonyAhrs_t *ahrs,
 
     if ((accel_mag > MAHONY_ACCEL_MIN_MAGNITUDE) && (accel_mag < MAHONY_ACCEL_MAX_MAGNITUDE))
     {
-        gravity_x = accel_x / accel_mag;
-        gravity_y = accel_y / accel_mag;
-        gravity_z = accel_z / accel_mag;
+        float inv_mag = 1.0f / accel_mag;
+        gravity_x = accel_x * inv_mag;
+        gravity_y = accel_y * inv_mag;
+        gravity_z = accel_z * inv_mag;
 
 #if (MAHONY_INPUT_ACCEL_IS_SPECIFIC_FORCE != 0U)
         gravity_x = -gravity_x;
@@ -424,34 +348,27 @@ void MahonyAhrs_Update(MahonyAhrs_t *ahrs,
         gravity_z = -gravity_z;
 #endif
 
-        acc_valid = Mahony_NormalizeVector3(&gravity_x, &gravity_y, &gravity_z);
+        acc_valid = 1U; /* Already normalized; magnitude is in (0.3, 3) g. */
     }
 
     accel_weight = 0.0f;
     if (acc_valid != 0U)
     {
-        float fast_gain_scale = Mahony_GetFastGainScale(ahrs);
         float acc_weight_nearness = Mahony_CalculateAccelWeightNearness(accel_mag);
         float acc_weight_rate_ignore = Mahony_CalculateAccelWeightRateIgnore(ahrs);
 
-        accel_weight = fast_gain_scale * acc_weight_nearness * acc_weight_rate_ignore;
-        ahrs->acc_weight_nearness = acc_weight_nearness;
-        ahrs->acc_weight_rate_ignore = acc_weight_rate_ignore;
-        ahrs->acc_weight_final = accel_weight;
+        accel_weight = acc_weight_nearness * acc_weight_rate_ignore;
+
     }
 
-    use_acc = ((acc_valid != 0U) && (accel_weight > MAHONY_ACCEL_WEIGHT_MIN)) ? 1U : 0U;
-
-    if (use_acc != 0U)
+    if (accel_weight > MAHONY_ACCEL_WEIGHT_MIN)
     {
-        float est_gravity_x;
-        float est_gravity_y;
-        float est_gravity_z;
+        float est_gravity_x = 2.0f * (prev_q1 * prev_q3 - prev_q0 * prev_q2);
+        float est_gravity_y = 2.0f * (prev_q0 * prev_q1 + prev_q2 * prev_q3);
+        float est_gravity_z = prev_q0 * prev_q0 - prev_q1 * prev_q1 - prev_q2 * prev_q2 + prev_q3 * prev_q3;
         float err_x;
         float err_y;
         float err_z;
-
-        Mahony_GetEstimatedGravityBody(ahrs, &est_gravity_x, &est_gravity_y, &est_gravity_z);
 
         err_x = gravity_y * est_gravity_z - gravity_z * est_gravity_y;
         err_y = gravity_z * est_gravity_x - gravity_x * est_gravity_z;
@@ -463,8 +380,7 @@ void MahonyAhrs_Update(MahonyAhrs_t *ahrs,
             ahrs->integral_fby += ahrs->ki * err_y * accel_weight * dt;
             ahrs->integral_fbx = Mahony_Clamp(ahrs->integral_fbx, -integral_limit, integral_limit);
             ahrs->integral_fby = Mahony_Clamp(ahrs->integral_fby, -integral_limit, integral_limit);
-            ahrs->gyro_bias_x = ahrs->integral_fbx;
-            ahrs->gyro_bias_y = ahrs->integral_fby;
+
         }
 
         p_correction_x = err_x * ahrs->kp * accel_weight;
@@ -526,96 +442,28 @@ void MahonyAhrs_Update(MahonyAhrs_t *ahrs,
     ahrs->update_count++;
 }
 
-void MahonyAhrs_GetQuaternion(const MahonyAhrs_t *ahrs,
-                              float *q0, float *q1, float *q2, float *q3)
+void MahonyAhrs_GetEulerDegrees(const MahonyAhrs_t *ahrs, float euler[3])
 {
-    *q0 = ahrs->q0;
-    *q1 = ahrs->q1;
-    *q2 = ahrs->q2;
-    *q3 = ahrs->q3;
-}
-
-void MahonyAhrs_GetEuler(const MahonyAhrs_t *ahrs,
-                         float *roll, float *pitch, float *yaw)
-{
-    float q0 = ahrs->q0;
-    float q1 = ahrs->q1;
-    float q2 = ahrs->q2;
-    float q3 = ahrs->q3;
-    float sin_pitch;
-
-
-    *roll = atan2f(2.0f * (q0 * q1 + q2 * q3),
-                   1.0f - 2.0f * (q1 * q1 + q2 * q2));
-
-    sin_pitch = 2.0f * (q0 * q2 - q3 * q1);
-    sin_pitch = Mahony_Clamp(sin_pitch, -1.0f, 1.0f);
-    *pitch = asinf(sin_pitch);
-
-    *yaw = atan2f(2.0f * (q0 * q3 + q1 * q2),
-                  1.0f - 2.0f * (q2 * q2 + q3 * q3));
-}
-
-MahonyAhrs_Euler_t MahonyAhrs_GetEulerDegrees(const MahonyAhrs_t *ahrs)
-{
-    MahonyAhrs_Euler_t euler;
-
-    MahonyAhrs_GetEuler(ahrs, &euler.roll, &euler.pitch, &euler.yaw);
-
-    euler.sin_roll = sinf(euler.roll);
-    euler.cos_roll = cosf(euler.roll);
-    euler.sin_pitch = sinf(euler.pitch);
-    euler.cos_pitch = cosf(euler.pitch);
-
-    euler.roll *= RADIANS_TO_DEGREES;
-    euler.pitch *= RADIANS_TO_DEGREES;
-    euler.yaw *= RADIANS_TO_DEGREES;
-
-    return euler;
-}
-
-void MahonyAhrs_SetGains(MahonyAhrs_t *ahrs, float kp, float ki)
-{
-    if (kp < 0.0f)
-    {
-        kp = 0.0f;
-    }
-
-    if (ki < 0.0f)
-    {
-        ki = 0.0f;
-    }
-
-    ahrs->kp = kp;
-    ahrs->ki = ki;
-}
-
-void MahonyAhrs_ResetQuaternion(MahonyAhrs_t *ahrs)
-{
-    ahrs->q0 = 1.0f;
-    ahrs->q1 = 0.0f;
-    ahrs->q2 = 0.0f;
-    ahrs->q3 = 0.0f;
-
-    ahrs->update_count = 0U;
+    float q0 = ahrs->q0, q1 = ahrs->q1, q2 = ahrs->q2, q3 = ahrs->q3;
+    euler[0] = atan2f(2.0f * (q0*q1 + q2*q3),
+                      1.0f - 2.0f * (q1*q1 + q2*q2)) * RADIANS_TO_DEGREES;
+    euler[1] = asinf(Mahony_Clamp(2.0f * (q0*q2 - q3*q1), -1.0f, 1.0f)) * RADIANS_TO_DEGREES;
+    euler[2] = atan2f(2.0f * (q0*q3 + q1*q2),
+                      1.0f - 2.0f * (q2*q2 + q3*q3)) * RADIANS_TO_DEGREES;
 }
 
 void MahonyAhrs_ResetBias(MahonyAhrs_t *ahrs)
 {
-    ahrs->gyro_bias_x = 0.0f;
-    ahrs->gyro_bias_y = 0.0f;
-    ahrs->gyro_bias_z = 0.0f;
+
     ahrs->gyro_bias_z_static = 0.0f;
 
     ahrs->integral_fbx = 0.0f;
     ahrs->integral_fby = 0.0f;
-    ahrs->integral_fbz = 0.0f;
+
     ahrs->gyro_lpf_x = 0.0f;
     ahrs->gyro_lpf_y = 0.0f;
     ahrs->gyro_lpf_z = 0.0f;
-    ahrs->acc_weight_nearness = 0.0f;
-    ahrs->acc_weight_rate_ignore = 0.0f;
-    ahrs->acc_weight_final = 0.0f;
+
     ahrs->static_count = 0U;
     ahrs->is_static = 0U;
     ahrs->gyro_lpf_ready = 0U;

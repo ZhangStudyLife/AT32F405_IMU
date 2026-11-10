@@ -15,6 +15,7 @@
  */
 /* AT32 port: retained ellipsoid equations/quality gates; incremental solver,
  * native axes, explicit save, no old-board defaults or platform dependencies. */
+#pragma STDC FP_CONTRACT OFF
 #include "calibration.h"
 #include <math.h>
 #include <string.h>
@@ -26,7 +27,6 @@ static float poses[MAX_POSES][3], mean[6], m2[6];
 static float aug[9][10], solution[9], bias[3], matrix[3][3];
 static unsigned solve_stage, row_index, pivot_index, eliminate_index;
 static float residual_sum;
-static float fabsf_local(float v) { return fabsf(v); }
 static float norm3(const float *v) { return sqrtf(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]); }
 static int finite_value(float v) { return v == v && fabsf(v) < 1e6f; }
 static void mat3_mul_vec(float m[3][3], const float v[3], float out[3])
@@ -50,7 +50,7 @@ static int32_t mat3_inverse_sym(float A[3][3], float inv[3][3])
     cofactor[2][2] = A[0][0] * A[1][1] - A[0][1] * A[1][0];
 
     det = A[0][0] * cofactor[0][0] + A[0][1] * cofactor[0][1] + A[0][2] * cofactor[0][2];
-    if (fabsf_local(det) < 1.0e-12f)
+    if (fabsf(det) < 1.0e-12f)
     {
         return -1;
     }

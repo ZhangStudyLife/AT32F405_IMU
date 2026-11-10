@@ -1,42 +1,45 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="project_projx.xsd">
+
   <SchemaVersion>2.1</SchemaVersion>
+
   <Header>### uVision Project, (C) Keil Software</Header>
+
   <Targets>
     <Target>
       <TargetName>AT32F405_IMU</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>5060528::V5.06 update 5 (build 528)::ARMCC</pCCUsed>
-      <uAC6>0</uAC6>
+      <pCCUsed>6230000::V6.23::ARMCLANG</pCCUsed>
+      <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
           <Device>AT32F405KBU7-4</Device>
           <Vendor>ArteryTek</Vendor>
           <PackID>ArteryTek.AT32F402_405_DFP.2.1.6</PackID>
           <Cpu>IRAM(0x20000000,0x11800) IROM(0x08000000,0x20000) CPUTYPE("Cortex-M4") FPU2 CLOCK(12000000) ELITTLE</Cpu>
-          <FlashUtilSpec />
-          <StartupFile />
-          <FlashDriverDll />
+          <FlashUtilSpec></FlashUtilSpec>
+          <StartupFile></StartupFile>
+          <FlashDriverDll></FlashDriverDll>
           <DeviceId>0</DeviceId>
           <RegisterFile>$$Device:AT32F405KBU7-4$Device/Include/at32f402_405.h</RegisterFile>
-          <MemoryEnv />
-          <Cmp />
-          <Asm />
-          <Linker />
-          <OHString />
-          <InfinionOptionDll />
-          <SLE66CMisc />
-          <SLE66AMisc />
-          <SLE66LinkerMisc />
+          <MemoryEnv></MemoryEnv>
+          <Cmp></Cmp>
+          <Asm></Asm>
+          <Linker></Linker>
+          <OHString></OHString>
+          <InfinionOptionDll></InfinionOptionDll>
+          <SLE66CMisc></SLE66CMisc>
+          <SLE66AMisc></SLE66AMisc>
+          <SLE66LinkerMisc></SLE66LinkerMisc>
           <SFDFile>$$Device:AT32F405KBU7-4$SVD\AT32F405xx_v2.svd</SFDFile>
           <bCustSvd>0</bCustSvd>
           <UseEnv>0</UseEnv>
-          <BinPath />
-          <IncludePath />
-          <LibPath />
-          <RegisterFilePath />
-          <DBRegisterFilePath />
+          <BinPath></BinPath>
+          <IncludePath></IncludePath>
+          <LibPath></LibPath>
+          <RegisterFilePath></RegisterFilePath>
+          <DBRegisterFilePath></DBRegisterFilePath>
           <TargetStatus>
             <Error>0</Error>
             <ExitCodeStop>0</ExitCodeStop>
@@ -58,8 +61,8 @@
           <BeforeCompile>
             <RunUserProg1>0</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name />
-            <UserProg2Name />
+            <UserProg1Name></UserProg1Name>
+            <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
             <nStopU1X>0</nStopU1X>
@@ -68,8 +71,8 @@
           <BeforeMake>
             <RunUserProg1>0</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name />
-            <UserProg2Name />
+            <UserProg1Name></UserProg1Name>
+            <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
             <nStopB1X>0</nStopB1X>
@@ -78,15 +81,15 @@
           <AfterMake>
             <RunUserProg1>0</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name />
-            <UserProg2Name />
+            <UserProg1Name></UserProg1Name>
+            <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
             <nStopA1X>0</nStopA1X>
             <nStopA2X>0</nStopA2X>
           </AfterMake>
           <SelectedForBatchBuild>0</SelectedForBatchBuild>
-          <SVCSIdString />
+          <SVCSIdString></SVCSIdString>
         </TargetCommonOption>
         <CommonProperty>
           <UseCPPCompiler>0</UseCPPCompiler>
@@ -100,8 +103,8 @@
           <AssembleAssemblyFile>0</AssembleAssemblyFile>
           <PublicsOnly>0</PublicsOnly>
           <StopOnExitCode>3</StopOnExitCode>
-          <CustomArgument />
-          <IncludeLibraryModules />
+          <CustomArgument></CustomArgument>
+          <IncludeLibraryModules></IncludeLibraryModules>
           <ComprImg>0</ComprImg>
         </CommonProperty>
         <DllOption>
@@ -134,11 +137,11 @@
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\CMSIS_AGDI.dll</Flash2>
-          <Flash3 />
-          <Flash4 />
-          <pFcarmOut />
-          <pFcarmGrp />
-          <pFcArmRoot />
+          <Flash3></Flash3>
+          <Flash4></Flash4>
+          <pFcarmOut></pFcarmOut>
+          <pFcarmGrp></pFcarmGrp>
+          <pFcArmRoot></pFcArmRoot>
           <FcArmLst>0</FcArmLst>
         </Utilities>
         <TargetArmAds>
@@ -171,7 +174,7 @@
             <RvctClst>0</RvctClst>
             <GenPPlst>0</GenPPlst>
             <AdsCpuType>"Cortex-M4"</AdsCpuType>
-            <RvctDeviceName />
+            <RvctDeviceName></RvctDeviceName>
             <mOS>0</mOS>
             <uocRom>0</uocRom>
             <uocRam>0</uocRam>
@@ -273,7 +276,7 @@
               <OCR_RVCT4>
                 <Type>1</Type>
                 <StartAddress>0x8000000</StartAddress>
-                <Size>0x20000</Size>
+                <Size>0x1fc00</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -306,12 +309,12 @@
                 <Size>0x0</Size>
               </OCR_RVCT10>
             </OnChipMemories>
-            <RvctStartVector />
+            <RvctStartVector></RvctStartVector>
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>1</Optim>
-            <oTime>0</oTime>
+            <Optim>4</Optim>
+            <oTime>1</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>1</OneElfS>
             <Strict>0</Strict>
@@ -322,20 +325,20 @@
             <wLevel>2</wLevel>
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
-            <uC99>0</uC99>
+            <uC99>1</uC99>
             <uGnu>0</uGnu>
             <useXO>0</useXO>
             <v6Lang>1</v6Lang>
             <v6LangP>1</v6LangP>
             <vShortEn>1</vShortEn>
             <vShortWch>1</vShortWch>
-            <v6Lto>0</v6Lto>
+            <v6Lto>1</v6Lto>
             <v6WtE>0</v6WtE>
             <v6Rtti>0</v6Rtti>
             <VariousControls>
-              <MiscControls />
+              <MiscControls>-std=c99 -ffp-model=precise -fno-math-errno</MiscControls>
               <Define>AT32F405KBU7_4,USE_STDPERIPH_DRIVER</Define>
-              <Undefine />
+              <Undefine></Undefine>
               <IncludePath>C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Include;C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Firmware/Peripherals/inc;C:/Keil/ARM/PACK/ARM/CMSIS/5.9.0/CMSIS/Core/Include</IncludePath>
             </VariousControls>
           </Cads>
@@ -351,28 +354,28 @@
             <useXO>0</useXO>
             <ClangAsOpt>4</ClangAsOpt>
             <VariousControls>
-              <MiscControls />
-              <Define />
-              <Undefine />
-              <IncludePath />
+              <MiscControls></MiscControls>
+              <Define></Define>
+              <Undefine></Undefine>
+              <IncludePath></IncludePath>
             </VariousControls>
           </Aads>
           <LDads>
-            <umfTarg>1</umfTarg>
+            <umfTarg>0</umfTarg>
             <Ropi>0</Ropi>
             <Rwpi>0</Rwpi>
             <noStLib>0</noStLib>
             <RepFail>1</RepFail>
-            <useFile>0</useFile>
+            <useFile>1</useFile>
             <TextAddressRange>0x08000000</TextAddressRange>
             <DataAddressRange>0x20000000</DataAddressRange>
-            <pXoBase />
-            <ScatterFile />
-            <IncludeLibs />
-            <IncludeLibsPath />
-            <Misc />
-            <LinkerInputFile />
-            <DisabledWarnings />
+            <pXoBase></pXoBase>
+            <ScatterFile>./imu_readout.sct</ScatterFile>
+            <IncludeLibs></IncludeLibs>
+            <IncludeLibsPath></IncludeLibsPath>
+            <Misc></Misc>
+            <LinkerInputFile></LinkerInputFile>
+            <DisabledWarnings></DisabledWarnings>
           </LDads>
         </TargetArmAds>
       </TargetOption>
@@ -388,7 +391,7 @@
             <File>
               <FileName>startup_at32f402_405.s</FileName>
               <FileType>2</FileType>
-              <FilePath>C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Source/ARM/startup_at32f402_405.s</FilePath>
+              <FilePath>startup_at32f402_405.s</FilePath>
             </File>
             <File>
               <FileName>system_at32f402_405.c</FileName>
@@ -415,16 +418,78 @@
               <FileType>1</FileType>
               <FilePath>C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Firmware/Peripherals/src/at32f402_405_spi.c</FilePath>
             </File>
+            <File>
+              <FileName>platform.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>platform.c</FilePath>
+            </File>
+            <File>
+              <FileName>imu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>imu.c</FilePath>
+            </File>
+            <File>
+              <FileName>calibration.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>calibration.c</FilePath>
+            </File>
+            <File>
+              <FileName>storage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>storage.c</FilePath>
+            </File>
+            <File>
+              <FileName>MahonyAhrs.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>MahonyAhrs.c</FilePath>
+            </File>
+            <File>
+              <FileName>IMU_Filtter.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>IMU_Filtter.c</FilePath>
+            </File>
+            <File>
+              <FileName>at32f402_405_dma.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Firmware/Peripherals/src/at32f402_405_dma.c</FilePath>
+            </File>
+            <File>
+              <FileName>at32f402_405_exint.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Firmware/Peripherals/src/at32f402_405_exint.c</FilePath>
+            </File>
+            <File>
+              <FileName>at32f402_405_scfg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Firmware/Peripherals/src/at32f402_405_scfg.c</FilePath>
+            </File>
+            <File>
+              <FileName>at32f402_405_tmr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Firmware/Peripherals/src/at32f402_405_tmr.c</FilePath>
+            </File>
+            <File>
+              <FileName>at32f402_405_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Firmware/Peripherals/src/at32f402_405_flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>at32f402_405_pwc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Firmware/Peripherals/src/at32f402_405_pwc.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
     </Target>
   </Targets>
+
   <RTE>
-    <apis />
-    <components />
-    <files />
+    <apis/>
+    <components/>
+    <files/>
   </RTE>
+
   <LayerInfo>
     <Layers>
       <Layer>
@@ -434,4 +499,5 @@
       </Layer>
     </Layers>
   </LayerInfo>
+
 </Project>

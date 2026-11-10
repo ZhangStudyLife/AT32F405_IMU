@@ -18,16 +18,6 @@ void platform_idle(void)
     __enable_irq();
 }
 
-void profile_add(unsigned stage, uint32_t elapsed)
-{
-    Profile *p = &profiles[stage];
-    if (!p->count || elapsed < p->min) p->min = elapsed;
-    if (elapsed > p->max) p->max = elapsed;
-    p->last = elapsed;
-    p->total += elapsed;
-    p->count++;
-}
-
 void profile_reset(void)
 {
     uint32_t mask = __get_PRIMASK();

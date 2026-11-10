@@ -1,9 +1,9 @@
 #include "lsm6dsv16x.h"
-#include <string.h>
 
 SensorStatus sensor_status;
-static uint8_t tx[13], rx[13];
-static volatile uint32_t pending, edge_us, edge_cycles, dma_done, dma_error, dma_end_cycles;
+static uint8_t tx[13];
+static volatile uint8_t rx[13]; /* Written by DMA. */
+static volatile uint32_t pending, edge_us, edge_cycles, dma_status, dma_end_cycles;
 static uint32_t bus_active, bus_start_us, deadline, frame_us, frame_cycles, burst;
 static const uint8_t config[][2] = {
     {0x12,0x44}, {0x10,0x10}, {0x11,0x10}, {0x62,0x01},
@@ -16,7 +16,7 @@ volatile uint32_t test_fault;
 void EXINT0_IRQHandler(void)
 {
     uint32_t start = cycles();
-    exint_flag_clear(EXINT_LINE_0);
+    EXINT->intsts = EXINT_LINE_0;
     if (pending) sensor_status.overlaps++;
     edge_us = micros();
     edge_cycles = cycles();
@@ -28,18 +28,17 @@ void EXINT0_IRQHandler(void)
 void DMA1_Channel1_IRQHandler(void)
 {
     uint32_t start = cycles();
-    dma_error = dma_flag_get(DMA1_DTERR1_FLAG) != RESET;
-    dma_done = dma_flag_get(DMA1_FDT1_FLAG) != RESET;
+    dma_status = DMA1->sts;
     dma_end_cycles = cycles();
-    dma_flag_clear(DMA1_GL1_FLAG);
+    DMA1->clr = DMA1_GL1_FLAG;
     profile_add(PROF_IRQ, cycles() - start);
 }
 
 static void bus_end(void)
 {
-    dma_channel_enable(DMA1_CHANNEL1, FALSE);
-    dma_channel_enable(DMA1_CHANNEL2, FALSE);
-    gpio_bits_set(GPIOA, GPIO_PINS_4);
+    DMA1_CHANNEL1->ctrl_bit.chen = 0;
+    DMA1_CHANNEL2->ctrl_bit.chen = 0;
+    GPIOA->scr = GPIO_PINS_4;
     bus_active = 0;
 }
 
@@ -54,32 +53,33 @@ void sensor_stop(void)
 
 static void bus_start(uint8_t reg, uint8_t value, unsigned len, int read)
 {
-    memset(tx, 0, sizeof(tx));
+    /* Bytes 2..12 stay zero; only the command and write value change. */
     tx[0] = reg | (read ? 0x80 : 0);
     tx[1] = value;
-    dma_done = dma_error = 0;
-    dma_flag_clear(DMA1_GL1_FLAG | DMA1_GL2_FLAG);
-    dma_data_number_set(DMA1_CHANNEL1, len);
-    dma_data_number_set(DMA1_CHANNEL2, len);
+    dma_status = 0;
+    DMA1->clr = DMA1_GL1_FLAG | DMA1_GL2_FLAG;
+    DMA1_CHANNEL1->dtcnt = len;
+    DMA1_CHANNEL2->dtcnt = len;
     bus_start_us = micros();
     bus_active = 1;
-    gpio_bits_reset(GPIOA, GPIO_PINS_4);
+    GPIOA->clr = GPIO_PINS_4;
 #ifdef IMU_TEST
     if (test_fault == 2) return;
 #endif
-    dma_channel_enable(DMA1_CHANNEL1, TRUE);
-    dma_channel_enable(DMA1_CHANNEL2, TRUE);
+    __DMB(); /* Publish tx before enabling the DMA bus master. */
+    DMA1_CHANNEL1->ctrl_bit.chen = 1;
+    DMA1_CHANNEL2->ctrl_bit.chen = 1;
 }
 
 static int bus_poll(void)
 {
-    if (dma_error || (uint32_t)(micros() - bus_start_us) >= 250) {
-        if (dma_error) sensor_status.dma_errors++;
+    if ((dma_status & DMA1_DTERR1_FLAG) || (uint32_t)(micros() - bus_start_us) >= 250) {
+        if (dma_status & DMA1_DTERR1_FLAG) sensor_status.dma_errors++;
         else sensor_status.dma_timeouts++;
         bus_end();
         return -1;
     }
-    if (!dma_done || spi_i2s_flag_get(SPI1, SPI_I2S_BF_FLAG) != RESET) return 0;
+    if (!(dma_status & DMA1_FDT1_FLAG) || (SPI1->sts & SPI_I2S_BF_FLAG)) return 0;
     bus_end();
     return 1;
 }
@@ -243,7 +243,7 @@ int sensor_poll(ImuSample *sample)
         if (test_fault == 1) return 0;
 #endif
         if ((int32_t)(micros() - deadline) < 0) return 0;
-        if (pending || gpio_input_data_bit_read(GPIOB, GPIO_PINS_0) != RESET) {
+        if (pending || (GPIOB->idt & GPIO_PINS_0)) {
             frame_us = pending ? edge_us : micros();
             frame_cycles = pending ? edge_cycles : cycles();
             deadline = micros() + 100;

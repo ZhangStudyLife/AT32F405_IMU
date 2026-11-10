@@ -98,7 +98,7 @@ static void commands(void)
 void IMU_Process(void)
 {
     ImuSample sample;
-    float a[3],g[3],dt;
+    float dt;
     uint32_t start,period,cal_before;
     unsigned i;
     int result;
@@ -143,29 +143,21 @@ void IMU_Process(void)
             MahonyAhrs_ResetBias(&ahrs);
         profile_add(PROF_CAL_SAMPLE,cycles()-start);
         start=cycles();
-        Cal_Apply(state.accel,state.gyro,a,g);
+        Cal_Apply(state.accel,state.gyro,state.filtered_accel,state.filtered_gyro);
         profile_add(PROF_PREPROCESS,period+cycles()-start);
         start=cycles();
-        IMUFilter_Update(g[0],g[1],g[2],a[0],a[1],a[2]);
+        IMUFilter_Update(state.filtered_gyro,state.filtered_accel);
         profile_add(PROF_FILTER,cycles()-start);
-        state.filtered_gyro[0]=g_imufilter_1000hz.gyrox;
-        state.filtered_gyro[1]=g_imufilter_1000hz.gyroy;
-        state.filtered_gyro[2]=g_imufilter_1000hz.gyroz;
-        state.filtered_accel[0]=g_imufilter_1000hz.accx;
-        state.filtered_accel[1]=g_imufilter_1000hz.accy;
-        state.filtered_accel[2]=g_imufilter_1000hz.accz;
-        if(!seeded) { seed_attitude(a); seeded=1; }
+        if(!seeded) { seed_attitude(state.filtered_accel); seeded=1; }
         start=cycles();
         MahonyAhrs_Update(&ahrs,
             state.filtered_gyro[0],state.filtered_gyro[1],state.filtered_gyro[2],
             state.filtered_accel[0],state.filtered_accel[1],state.filtered_accel[2],dt);
         profile_add(PROF_MAHONY,cycles()-start);
         start=cycles();
-        {
-            MahonyAhrs_Euler_t e=MahonyAhrs_GetEulerDegrees(&ahrs);
-            state.euler[0]=e.roll; state.euler[1]=e.pitch; state.euler[2]=e.yaw;
-        }
-        MahonyAhrs_GetQuaternion(&ahrs,&state.q[0],&state.q[1],&state.q[2],&state.q[3]);
+        MahonyAhrs_GetEulerDegrees(&ahrs,state.euler);
+        state.q[0]=ahrs.q0; state.q[1]=ahrs.q1;
+        state.q[2]=ahrs.q2; state.q[3]=ahrs.q3;
         state.frames++;
         if(state.warmup<1000) state.warmup++;
         state.valid=state.warmup==1000;
