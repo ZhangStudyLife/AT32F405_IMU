@@ -15,7 +15,10 @@
 *.map
 *.lst
 *.lnp
+*.__i
 *.build_log.htm
+*.log
+/capture.csv
 
 # Local Keil UI state and backups; keep .uvprojx/.uvoptx and source .sct
 *.uvguix.*
