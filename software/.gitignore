@@ -1,0 +1,30 @@
+# Keil build output directories (including test projects)
+[Oo]bjects/
+[Ll]istings/
+
+# Compiler/linker outputs outside the default directories
+*.o
+*.obj
+*.d
+*.dep
+*.crf
+*.axf
+*.elf
+*.hex
+*.bin
+*.map
+*.lst
+*.lnp
+*.build_log.htm
+
+# Local Keil UI state and backups; keep .uvprojx/.uvoptx and source .sct
+*.uvguix.*
+*.uvgui.*
+*.uvprojx.bak
+*.uvoptx.bak
+*.uvproj.bak
+*.uvopt.bak
+
+# Python runtime cache
+__pycache__/
+*.pyc
