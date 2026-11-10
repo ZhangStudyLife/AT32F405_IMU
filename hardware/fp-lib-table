@@ -1,0 +1,1 @@
+(fp_lib_table (version 7) (lib (name "AT32F405_IMU") (type "KiCad") (uri "${KIPRJMOD}/AT32F405_IMU.pretty") (options "") (descr "AT32F405 QFN32 EP2.7")))

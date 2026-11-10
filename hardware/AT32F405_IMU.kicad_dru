@@ -1,0 +1,6 @@
+(version 1)
+(rule "Q1 internal pads" (condition "A.Type == 'Pad' && B.Type == 'Pad' && A.memberOfFootprint('Q1') && B.memberOfFootprint('Q1')") (constraint clearance (min 0.1mm)))
+(rule "Y1 internal pads" (condition "A.Type == 'Pad' && B.Type == 'Pad' && A.memberOfFootprint('Y1') && B.memberOfFootprint('Y1')") (constraint clearance (min 0.12mm)))
+(rule "U2 internal pads" (condition "A.Type == 'Pad' && B.Type == 'Pad' && A.memberOfFootprint('U2') && B.memberOfFootprint('U2')") (constraint clearance (min 0.15mm)))
+(rule "C10 internal pads" (condition "A.Type == 'Pad' && B.Type == 'Pad' && A.memberOfFootprint('C10') && B.memberOfFootprint('C10')") (constraint clearance (min 0.18mm)))
+(rule "C11 internal pads" (condition "A.Type == 'Pad' && B.Type == 'Pad' && A.memberOfFootprint('C11') && B.memberOfFootprint('C11')") (constraint clearance (min 0.18mm)))

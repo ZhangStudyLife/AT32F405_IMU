@@ -1,0 +1,1 @@
+(sym_lib_table (version 7) (lib (name "AT32F405_IMU") (type "KiCad") (uri "${KIPRJMOD}/AT32F405_IMU.kicad_sym") (options "") (descr "Project verified symbols")))
