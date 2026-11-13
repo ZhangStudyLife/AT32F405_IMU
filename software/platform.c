@@ -4,6 +4,7 @@
 volatile uint32_t heartbeat_ms;
 Profile profiles[PROF_COUNT];
 uint64_t idle_cycles;
+uint32_t profile_since;
 
 void platform_idle(void)
 {
@@ -24,6 +25,7 @@ void profile_reset(void)
     __disable_irq();
     memset(profiles, 0, sizeof(profiles));
     idle_cycles = 0;
+    profile_since = micros();
     __set_PRIMASK(mask);
 }
 
@@ -46,6 +48,7 @@ int platform_init(void)
     pwc_ldo_output_voltage_set(PWC_LDO_OUTPUT_1V3);
     /* HICK / 6 = 8 MHz; 8 * 108 / 1 / 4 = 216 MHz. */
     crm_pll_config(CRM_PLL_SOURCE_HICK, 108, 1, CRM_PLL_FP_4);
+    crm_apb1_div_set(CRM_APB1_DIV_2);
     crm_clock_source_enable(CRM_CLOCK_SOURCE_PLL, TRUE);
     start = cycles();
     while (crm_flag_get(CRM_PLL_STABLE_FLAG) != SET)

@@ -233,6 +233,7 @@ int sensor_poll(ImuSample *sample)
             profile_add(PROF_ACQUIRE, dma_end_cycles - frame_cycles);
             return 1;
         }
+        if (done) sensor_status.last_status = rx[1];
         if (done && (rx[1] & 3) == 3) {
             pending = 0;
             burst = 1;
@@ -243,7 +244,9 @@ int sensor_poll(ImuSample *sample)
         if (test_fault == 1) return 0;
 #endif
         if ((int32_t)(micros() - deadline) < 0) return 0;
-        if (pending || (GPIOB->idt & GPIO_PINS_0)) {
+        if (pending || (GPIOB->idt & GPIO_PINS_0) ||
+            (int32_t)(micros() - deadline) >= 900) {
+            if (!pending && !(GPIOB->idt & GPIO_PINS_0)) sensor_status.fallback_reads++;
             frame_us = pending ? edge_us : micros();
             frame_cycles = pending ? edge_cycles : cycles();
             deadline = micros() + 100;

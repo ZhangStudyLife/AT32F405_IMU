@@ -381,7 +381,7 @@
       </TargetOption>
       <Groups>
         <Group>
-          <GroupName>SWD test</GroupName>
+          <GroupName>IMU</GroupName>
           <Files>
             <File>
               <FileName>main.c</FileName>
@@ -477,6 +477,11 @@
               <FileName>at32f402_405_pwc.c</FileName>
               <FileType>1</FileType>
               <FilePath>C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Firmware/Peripherals/src/at32f402_405_pwc.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>uart.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -5,6 +5,7 @@
 
 extern volatile uint32_t heartbeat_ms;
 extern uint64_t idle_cycles;
+extern uint32_t profile_since;
 int platform_init(void);
 void platform_idle(void);
 __STATIC_FORCEINLINE uint32_t cycles(void)
@@ -19,7 +20,7 @@ __STATIC_FORCEINLINE uint32_t micros(void) { return TMR2->cval; }
 
 enum { PROF_ACQUIRE, PROF_DRIVER, PROF_PREPROCESS, PROF_FILTER, PROF_MAHONY,
        PROF_EULER, PROF_CAL_SAMPLE, PROF_CAL_SLICE, PROF_CAL_TOTAL,
-       PROF_FRAME, PROF_PROCESS, PROF_IRQ, PROF_SAVE, PROF_COUNT };
+       PROF_FRAME, PROF_PROCESS, PROF_IRQ, PROF_SAVE, PROF_UART, PROF_COUNT };
 typedef struct {
     uint32_t count, last, min, max;
     uint64_t total;

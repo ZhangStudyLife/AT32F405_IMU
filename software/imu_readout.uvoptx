@@ -175,7 +175,7 @@
   </Target>
 
   <Group>
-    <GroupName>SWD test</GroupName>
+    <GroupName>IMU</GroupName>
     <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
@@ -405,6 +405,18 @@
       <bDave2>0</bDave2>
       <PathWithFileName>C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Firmware/Peripherals/src/at32f402_405_pwc.c</PathWithFileName>
       <FilenameWithoutPath>at32f402_405_pwc.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>1</GroupNumber>
+      <FileNumber>20</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>uart.c</PathWithFileName>
+      <FilenameWithoutPath>uart.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

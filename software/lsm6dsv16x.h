@@ -7,7 +7,7 @@ typedef struct {
 } ImuSample;
 typedef struct {
     uint32_t id, phase, error, dma_timeouts, dma_errors, drdy_count, overlaps;
-    uint32_t config_index;
+    uint32_t config_index, fallback_reads, last_status;
 } SensorStatus;
 extern SensorStatus sensor_status;
 void sensor_init(void);

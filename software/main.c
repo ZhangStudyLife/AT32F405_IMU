@@ -1,15 +1,18 @@
 #include "imu.h"
+#include "uart.h"
 
 int main(void)
 {
-    uint32_t start;
+    uint32_t start, maintenance;
     if (!platform_init()) boot_error=1;
-    else IMU_Init();
+    IMU_Init(); UART_Init();
     for (;;) {
         start=cycles();
+        maintenance=IMU_GetState()->maintenance;
         if (!boot_error) IMU_Process();
-        IMU_DebugPublish();
-        profile_add(PROF_PROCESS,cycles()-start);
+        UART_Process();
+        if (!maintenance && !IMU_GetState()->maintenance)
+            profile_add(PROF_PROCESS,cycles()-start);
         platform_idle();
     }
 }

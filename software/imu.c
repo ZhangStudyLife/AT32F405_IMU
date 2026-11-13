@@ -3,15 +3,12 @@
 #include "IMU_Filtter.h"
 #include "storage.h"
 #include <math.h>
-#include <string.h>
 
-volatile uint32_t debug_request, debug_ack, imu_command, boot_error;
-volatile DebugSnapshot debug_snapshot;
+volatile uint32_t boot_error;
 static IMUState state;
 static MahonyAhrs_t ahrs;
-static uint32_t last_sample, profile_since, last_solver_us, solve_start, save_start;
-static uint32_t maintenance, save_result, stale, seeded, erase_requested;
-static int command_result;
+static uint32_t last_sample, last_solver_us, solve_start, save_start;
+static uint32_t stale, seeded, erase_requested;
 
 const IMUState *IMU_GetState(void) { return &state; }
 
@@ -28,8 +25,8 @@ void IMU_Init(void)
 {
     Cal_Init();
     storage_load();
-    restart();
-    profile_since=micros();
+    if (!boot_error) restart();
+    profile_reset();
 }
 
 /* Initial tilt in native sensor axes, including the inverted orientation. */
@@ -62,37 +59,40 @@ static int synthetic_calibration(unsigned kind)
 }
 #endif
 
-static void commands(void)
+int IMU_Command(uint32_t cmd)
 {
-    uint32_t cmd=imu_command;
-    if(!cmd || maintenance) return;
-    imu_command=0;
-    command_result=CAL_OK;
+    int result;
+    if(state.maintenance) return CAL_BUSY;
+    if(boot_error && cmd!=CMD_ABORT && cmd!=CMD_PROFILE_RESET) return 12;
+    if(cmd>=CMD_GYRO && cmd<=CMD_COLLECT &&
+       (sensor_status.phase!=6 || !state.warmup ||
+        (uint32_t)(micros()-state.time_us)>=10000)) return 12;
     switch(cmd) {
-    case CMD_GYRO: command_result=Cal_StartGyro(); break;
-    case CMD_ACCEL: command_result=Cal_StartAccel(); break;
-    case CMD_COLLECT: command_result=Cal_Collect(); break;
+    case CMD_GYRO: return Cal_StartGyro();
+    case CMD_ACCEL: return Cal_StartAccel();
+    case CMD_COLLECT: return Cal_Collect();
     case CMD_SOLVE:
-        command_result=Cal_Solve(); solve_start=cycles(); break;
+        result=Cal_Solve(); solve_start=cycles(); return result;
     case CMD_ABORT: Cal_Abort(); break;
     case CMD_SAVE:
     case CMD_ERASE_CAL:
         if(cal_status.state>=CAL_READY && cal_status.state<=CAL_SOLVING) {
-            command_result=CAL_BUSY; break;
+            return CAL_BUSY;
         }
-        state.valid=0; maintenance=1; save_result=0;
+        state.valid=0; state.maintenance=1; state.save_result=0;
         erase_requested=cmd==CMD_ERASE_CAL;
         sensor_stop(); save_start=cycles(); storage_start(erase_requested);
         break;
     case CMD_PROFILE_RESET:
-        profile_reset(); profile_since=micros();
+        profile_reset();
         state.period_min=state.period_max=0; break;
     case CMD_RESTART: Cal_Abort(); restart(); break;
 #ifdef IMU_TEST
-    case 100: case 101: case 102: command_result=synthetic_calibration(cmd); break;
+    case 100: case 101: case 102: return synthetic_calibration(cmd);
 #endif
-    default: command_result=CAL_BAD_COMMAND; break;
+    default: return CAL_BAD_COMMAND;
     }
+    return CAL_OK;
 }
 
 void IMU_Process(void)
@@ -102,14 +102,13 @@ void IMU_Process(void)
     uint32_t start,period,cal_before;
     unsigned i;
     int result;
-    commands();
-    if(maintenance) {
+    if(state.maintenance) {
         result=storage_poll();
         if(result) {
             profile_add(PROF_SAVE,cycles()-save_start);
-            save_result=result>0 ? 1:2;
+            state.save_result=result>0 ? 1:2;
             if(result>0 && erase_requested) Cal_Init();
-            maintenance=0; restart();
+            state.maintenance=0; restart();
         }
         return;
     }
@@ -170,6 +169,9 @@ void IMU_Process(void)
     if(result<0 || (last_sample && (uint32_t)(micros()-last_sample)>10000)) {
         if(!stale) { state.no_data++; stale=1; }
         state.valid=0;
+        if(cal_status.state==CAL_WAIT || cal_status.state==CAL_COLLECTING) {
+            cal_status.state=CAL_FAILED; cal_status.error=CAL_TIMEOUT;
+        }
     }
     if(cal_status.state==CAL_SOLVING && (uint32_t)(micros()-last_solver_us)>=1000) {
         last_solver_us=micros();
@@ -177,37 +179,4 @@ void IMU_Process(void)
         profile_add(PROF_CAL_SLICE,cycles()-start);
         if(cal_status.state!=CAL_SOLVING) profile_add(PROF_CAL_TOTAL,cycles()-solve_start);
     }
-}
-
-void IMU_DebugPublish(void)
-{
-    uint32_t request=debug_request,mask;
-    if(request==debug_ack) return;
-    debug_snapshot.sequence++;
-    __DMB();
-    debug_snapshot.magic=0x41545449;
-    debug_snapshot.version=2;
-    debug_snapshot.size=sizeof(DebugSnapshot);
-    debug_snapshot.now_us=micros();
-    debug_snapshot.heartbeat=heartbeat_ms;
-    debug_snapshot.core_hz=system_core_clock;
-    debug_snapshot.command_result=command_result;
-    debug_snapshot.maintenance=maintenance;
-    debug_snapshot.save_result=save_result;
-    debug_snapshot.profile_elapsed_us=micros()-profile_since;
-#ifdef IMU_TEST
-    debug_snapshot.test_build=1;
-#endif
-    debug_snapshot.imu=state;
-    debug_snapshot.calibration=cal_status;
-    debug_snapshot.params=cal_params;
-    mask=__get_PRIMASK(); __disable_irq();
-    debug_snapshot.sensor=sensor_status;
-    memcpy((void *)debug_snapshot.timing,profiles,sizeof(profiles));
-    debug_snapshot.idle_cycles=idle_cycles;
-    __set_PRIMASK(mask);
-    __DMB();
-    debug_snapshot.sequence++;
-    __DMB();
-    debug_ack=request;
 }
