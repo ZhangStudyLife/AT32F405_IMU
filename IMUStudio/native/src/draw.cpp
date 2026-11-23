@@ -44,7 +44,7 @@ std::array<float, 9> rotation(const Sample& sample) {
 }
 
 Fonts::~Fonts() {
-    for (const auto font : {body, small, strong, title, number, mono})
+    for (const auto font : {body, caption, strong, title, number, mono})
         if (font)
             DeleteObject(font);
 }
@@ -60,7 +60,7 @@ void Fonts::set(int value) {
             OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, DEFAULT_PITCH, face);
     };
     create(body, 14, FW_NORMAL, L"Microsoft YaHei UI");
-    create(small, 12, FW_NORMAL, L"Microsoft YaHei UI");
+    create(caption, 12, FW_NORMAL, L"Microsoft YaHei UI");
     create(strong, 15, FW_SEMIBOLD, L"Microsoft YaHei UI");
     create(title, 27, FW_SEMIBOLD, L"Segoe UI");
     create(number, 31, FW_SEMIBOLD, L"Segoe UI");
@@ -256,7 +256,7 @@ void Charts::draw(const Paint& p, RECT card, int group, const History& history) 
             p.line(x + p.px(7), y, x + p.px(11), y, color);
         hit.left += p.px(15);
         hit.right -= p.px(3);
-        p.text(hit, label, p.fonts.small, on ? ink : muted);
+        p.text(hit, label, p.fonts.caption, on ? ink : muted);
     }
     const RECT plot{card.left + p.px(58), card.top + p.px(70), card.right - margin, card.bottom - p.px(31)};
     panels_[group] = plot;
@@ -291,11 +291,11 @@ void Charts::draw(const Paint& p, RECT card, int group, const History& history) 
         p.line(plot.left, y, plot.right + 1, y, c);
         p.line(x, plot.top, x, plot.bottom + 1, c);
         p.text({card.left + p.px(4), y - p.px(9), plot.left - p.px(7), y + p.px(9)},
-            significant(center + span * (1 - i * 0.5), 4), p.fonts.small, muted,
+            significant(center + span * (1 - i * 0.5), 4), p.fonts.caption, muted,
             DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
         const auto tick_x = std::clamp<LONG>(x, plot.left + p.px(15), plot.right - p.px(18));
         p.text({tick_x - p.px(34), plot.bottom + p.px(5), tick_x + p.px(34), card.bottom},
-            fixed(left + seconds * i / 4, 1) + (i == 4 ? L" s" : L""), p.fonts.small, muted, centered);
+            fixed(left + seconds * i / 4, 1) + (i == 4 ? L" s" : L""), p.fonts.caption, muted, centered);
     }
 
     if (PtInRect(&plot, mouse)) {
@@ -508,7 +508,7 @@ void Board::draw(const Paint& p, RECT card, const Snapshot& snapshot, bool stale
     const int pad = p.px(18);
     const RECT stage{card.left + pad, card.top + p.px(77), card.right - pad, card.bottom - pad};
     p.text({stage.left, card.top + p.px(12), stage.right, card.top + p.px(39)}, L"三维姿态", p.fonts.strong);
-    p.text({stage.left, card.top + p.px(42), stage.right, card.top + p.px(64)}, attitude_state(snapshot, stale), p.fonts.small, muted);
+    p.text({stage.left, card.top + p.px(42), stage.right, card.top + p.px(64)}, attitude_state(snapshot, stale), p.fonts.caption, muted);
     if (!ready() || stage.right <= stage.left || stage.bottom <= stage.top)
         return;
     if (!stale && snapshot.latest && (snapshot.latest->flags & valid_attitude)) {
@@ -572,8 +572,8 @@ void Board::draw(const Paint& p, RECT card, const Snapshot& snapshot, bool stale
         p.line(origin.x, origin.y, sensor.x, sensor.y, color);
         p.line(reference.x, reference.y, x, y, color);
         const wchar_t label[]{L"XYZ"[i], 0};
-        p.text({sensor.x + p.px(3), sensor.y - p.px(8), sensor.x + p.px(19), sensor.y + p.px(8)}, label, p.fonts.small, ink);
-        p.text({x + p.px(3), y - p.px(8), x + p.px(19), y + p.px(8)}, label, p.fonts.small, muted);
+        p.text({sensor.x + p.px(3), sensor.y - p.px(8), sensor.x + p.px(19), sensor.y + p.px(8)}, label, p.fonts.caption, ink);
+        p.text({x + p.px(3), y - p.px(8), x + p.px(19), y + p.px(8)}, label, p.fonts.caption, muted);
     }
     RestoreDC(p.dc, clip);
 }

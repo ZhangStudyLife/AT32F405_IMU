@@ -661,7 +661,7 @@ void App::paint(HDC dc, RECT affected) {
     p.fill(affected, background);
     p.fill(bounds(0, 0, width_, 158), paper);
     p.text(bounds(22, 10, 230, 43), L"IMUStudio", fonts_.title);
-    p.text(bounds(23, 44, 280, 61), L"AT32F405  /  LSM6DSV16X", fonts_.small, muted);
+    p.text(bounds(23, 44, 280, 61), L"AT32F405  /  LSM6DSV16X", fonts_.caption, muted);
     p.text(bounds(right - 238, 23, right - 124, 53), L"v" + std::wstring(app_version_w),
            fonts_.mono, muted, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
     p.line(0, px(107), client.right, px(107));
@@ -670,7 +670,7 @@ void App::paint(HDC dc, RECT affected) {
     auto link = probing_ ? L"正在探测速率" : view_.link;
     if (view_.port_open && now_ns() - std::max(view_.last_rx, view_.origin) > 3000000000LL)
         link = L"串口已打开 · 无有效回复";
-    p.text(bounds(625, 117, right, 148), link, fonts_.small, ink, DT_RIGHT | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
+    p.text(bounds(625, 117, right, 148), link, fonts_.caption, ink, DT_RIGHT | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
 
     if (page_ == Live || page_ == Wave) {
         charts_.begin();
@@ -682,12 +682,12 @@ void App::paint(HDC dc, RECT affected) {
                 config_text = L"当前  " + std::to_wstring(cfg.baud) + L" baud  /  " + std::to_wstring(cfg.rate) +
                     L" Hz  /  mask " + std::to_wstring(cfg.mask);
             }
-            p.text(bounds(22, 197, width_ / 2, 223), config_text, fonts_.small, muted);
+            p.text(bounds(22, 197, width_ / 2, 223), config_text, fonts_.caption, muted);
             const bool ch340 = selected(PortBox) >= 0 && ports_[selected(PortBox)].ch340;
             const auto warning = ch340 && draft.baud > 2000000 ? L"CH340 支持 1 或 2 Mbps" : config_error(draft);
             const auto budget = draft.baud ? fixed(frame_size(draft.mask) * draft.rate * 1000.0 / draft.baud, 1) + L"%" : L"—";
             const auto config_hint = warning ? std::wstring(warning) : L"线路占用 " + budget + L"   ·   " + view_.saved;
-            p.text(bounds(width_ / 2, 197, right, 223), config_hint, fonts_.small, muted,
+            p.text(bounds(width_ / 2, 197, right, 223), config_hint, fonts_.caption, muted,
                    DT_RIGHT | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
             RECT left = contents_;
             left.right = board_card_.left - px(12);
@@ -701,7 +701,7 @@ void App::paint(HDC dc, RECT affected) {
                 const auto x = values.left + i * span;
                 if (i)
                     p.line(x, values.top + px(15), x, values.bottom - px(15));
-                p.text({x + px(17), values.top + px(9), x + span - px(12), values.top + px(31)}, axes[i], fonts_.small, muted);
+                p.text({x + px(17), values.top + px(9), x + span - px(12), values.top + px(31)}, axes[i], fonts_.caption, muted);
                 const auto angle = view_.latest ? view_.latest->values[i] : std::numeric_limits<float>::quiet_NaN();
                 const auto text = std::isfinite(angle) && (view_.latest->flags & valid_attitude) ? fixed(angle, 2) + L"°" : L"—";
                 p.text({x + px(15), values.top + px(31), x + span - px(10), values.bottom - px(7)}, text,
@@ -732,7 +732,7 @@ void App::paint(HDC dc, RECT affected) {
         const auto stable_max = mode == 1 ? 1500u : 1250u, sample_max = mode == 1 ? 60000u : 5000u;
         const auto progress = [&](int x, int w, int value, int max, const wchar_t* name) {
             p.text(bounds(x, 252, x + w, 272), std::wstring(name) + L"  " + std::to_wstring(value) +
-                L" / " + std::to_wstring(max), fonts_.small, muted);
+                L" / " + std::to_wstring(max), fonts_.caption, muted);
             p.fill(bounds(x, 276, x + w, 280), gray(233));
             p.fill(bounds(x, 276, x + MulDiv(w, std::clamp(value, 0, max), max), 280), ink);
         };
@@ -743,7 +743,7 @@ void App::paint(HDC dc, RECT affected) {
             L" / 128 姿态  ·  至少 12 个可求解  ·  RMS " + significant(status.rms) +
             L"  ·  最大模长误差 " + significant(status.max_error) + L"  ·  步骤 " + std::to_wstring(status[Status::SolveSteps]),
             fonts_.body);
-        p.text(bounds(22, 341, right, 369), L"陀螺标定保持静止约 60 秒。加速度标定从 ±X、±Y、±Z 与各斜向分散采点，每点静置约 6 秒。", fonts_.small, muted);
+        p.text(bounds(22, 341, right, 369), L"陀螺标定保持静止约 60 秒。加速度标定从 ±X、±Y、±Z 与各斜向分散采点，每点静置约 6 秒。", fonts_.caption, muted);
         p.fill(bounds(22, 380, right, height_ - 48), paper);
         p.border(bounds(22, 380, right, height_ - 48));
         p.text(bounds(38, 386, right - 16, 411), L"当前标定参数", fonts_.strong);
@@ -751,7 +751,7 @@ void App::paint(HDC dc, RECT affected) {
             const auto flags = view_.calibration->flags;
             const auto text = std::wstring(L"陀螺 ") + (flags & 1 ? L"已标定" : L"未标定") +
                 L"   /   加速度 " + (flags & 2 ? L"已标定" : L"未标定");
-            p.text(bounds(220, 386, right - 16, 411), text, fonts_.small, muted,
+            p.text(bounds(220, 386, right - 16, 411), text, fonts_.caption, muted,
                 DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
         }
         const auto step = std::min(29, std::max(17, (height_ - 48 - 418) / 5));
@@ -760,7 +760,7 @@ void App::paint(HDC dc, RECT affected) {
         for (int row = 0; row < 5; ++row) {
             const int y = 418 + step * row;
             p.line(px(38), px(y), px(right - 16), px(y), gray(237));
-            p.text(bounds(38, y, 197, y + step), names[row], fonts_.small, muted);
+            p.text(bounds(38, y, 197, y + step), names[row], fonts_.caption, muted);
             for (int col = 0; col < 3; ++col)
                 p.text(bounds(200 + span * col, y, 200 + span * (col + 1), y + step),
                     view_.calibration ? significant(view_.calibration->values[row * 3 + col], 8) : L"—", fonts_.mono);
@@ -770,8 +770,8 @@ void App::paint(HDC dc, RECT affected) {
         const auto& c = view_.parse;
         p.text(bounds(22, 205, right, 231), L"电脑接收   CRC " + std::to_wstring(c.crc) + L"  ·  长度异常 " +
             std::to_wstring(c.length) + L"  ·  无效 " + std::to_wstring(view_.invalid) + L"  ·  缺帧 " +
-            std::to_wstring(view_.missing) + L"  ·  丢弃 " + std::to_wstring(c.discarded) + L" B", fonts_.small, muted);
-        p.text(bounds(22, 228, right, 250), view_.interrupt, fonts_.small, muted);
+            std::to_wstring(view_.missing) + L"  ·  丢弃 " + std::to_wstring(c.discarded) + L" B", fonts_.caption, muted);
+        p.text(bounds(22, 228, right, 250), view_.interrupt, fonts_.caption, muted);
         for (const auto card : {bounds(22, 255, half - 7, height_ - 48), bounds(half + 7, 255, right, height_ - 48)}) {
             p.fill(card, paper);
             p.border(card);
@@ -785,12 +785,12 @@ void App::paint(HDC dc, RECT affected) {
             recording_.running ? L"正在写入日志" : recording_.error;
         if (!playing_.error.empty())
             log = playing_.error;
-        p.text(bounds(516, 170, right, 200), log, fonts_.small, muted);
-        p.text(bounds(22, 251, right, 279), log_path_.wstring(), fonts_.small, muted, single | DT_PATH_ELLIPSIS);
-        p.text(bounds(22, 289, 109, 320), L"CSV 范围 / s", fonts_.small, muted);
-        p.text(bounds(197, 289, 221, 320), L"至", fonts_.small, muted, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+        p.text(bounds(516, 170, right, 200), log, fonts_.caption, muted);
+        p.text(bounds(22, 251, right, 279), log_path_.wstring(), fonts_.caption, muted, single | DT_PATH_ELLIPSIS);
+        p.text(bounds(22, 289, 109, 320), L"CSV 范围 / s", fonts_.caption, muted);
+        p.text(bounds(197, 289, 221, 320), L"至", fonts_.caption, muted, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
         p.text(bounds(527, 289, right, 320), exporting_.message.empty() ? L"" :
-            exporting_.message + L"  ·  " + std::to_wstring(exporting_.rows) + L" 行", fonts_.small, muted);
+            exporting_.message + L"  ·  " + std::to_wstring(exporting_.rows) + L" 行", fonts_.caption, muted);
         p.fill(bounds(22, 332, right, height_ - 48), paper);
         p.border(bounds(22, 332, right, height_ - 48));
         p.text(bounds(36, 337, right - 16, 366), L"通信事件", fonts_.strong);
@@ -802,11 +802,11 @@ void App::paint(HDC dc, RECT affected) {
     const auto left = !cursor.empty() ? cursor : fixed(view_.port_open && stale_ ? 0 : view_.rate, 1) +
         L" 帧/s  ·  " + std::to_wstring(view_.total) + L" 帧" +
         ((page_ == Live || page_ == Wave) && charts_.frozen ? L"  ·  波形已冻结" : L"");
-    p.text(bounds(22, footer, width_ / 2 + 56, height_), left, fonts_.small, muted);
+    p.text(bounds(22, footer, width_ / 2 + 56, height_), left, fonts_.caption, muted);
     auto message = closing_ ? L"正在关闭" : !update_message_.empty() ? updating_.message : notice_;
     if (updating_.phase == UpdatePhase::Available || updating_.phase == UpdatePhase::Ready)
         message = updating_.message;
-    p.text(bounds(width_ / 2 + 64, footer, right, height_), message, fonts_.small, muted,
+    p.text(bounds(width_ / 2 + 64, footer, right, height_), message, fonts_.caption, muted,
            DT_RIGHT | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
     RestoreDC(p.dc, saved);
     if (memory)

@@ -10,7 +10,7 @@ inline constexpr auto paper = gray(255), background = gray(247), ink = gray(22),
 
 struct Fonts {
     int dpi{};
-    HFONT body{}, small{}, strong{}, title{}, number{}, mono{};
+    HFONT body{}, caption{}, strong{}, title{}, number{}, mono{};
     ~Fonts();
     void set(int value);
     int px(int value) const { return MulDiv(value, dpi, 96); }
