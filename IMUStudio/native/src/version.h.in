@@ -1,0 +1,5 @@
+#pragma once
+
+inline constexpr char app_version[] = "@PROJECT_VERSION@";
+inline constexpr wchar_t app_version_w[] = L"@PROJECT_VERSION@";
+inline constexpr char github_repo[] = "@IMUSTUDIO_REPOSITORY@";

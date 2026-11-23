@@ -1,0 +1,61 @@
+name: IMUStudio
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["imustudio-v*"]
+    paths:
+      - IMUStudio/native/**
+      - .github/workflows/imustudio.yml
+  pull_request:
+    paths:
+      - IMUStudio/native/**
+      - .github/workflows/imustudio.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure and build
+        shell: pwsh
+        run: |
+          cmake -S IMUStudio/native -B build -G 'Visual Studio 17 2022' -A x64 "-DIMUSTUDIO_REPOSITORY=$env:GITHUB_REPOSITORY"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --build build --config Release --parallel
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure
+      - name: Verify release version
+        if: startsWith(github.ref, 'refs/tags/imustudio-v')
+        shell: pwsh
+        run: |
+          $version = (Get-Item build/Release/IMUStudio.exe).VersionInfo.ProductVersion
+          if ($env:GITHUB_REF_NAME -cne "imustudio-v$version") {
+            throw "Tag $env:GITHUB_REF_NAME does not match IMUStudio $version"
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: IMUStudio-Windows-x64
+          path: build/Release/IMUStudio.exe
+          if-no-files-found: error
+
+  release:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/imustudio-v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: IMUStudio-Windows-x64
+      - name: Publish EXE
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" IMUStudio.exe --repo "$GITHUB_REPOSITORY" \
+            --verify-tag --latest=false --title "IMUStudio ${GITHUB_REF_NAME#imustudio-v}" --generate-notes
