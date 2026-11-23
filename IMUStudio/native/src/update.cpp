@@ -258,7 +258,7 @@ void Updater::check() {
             }
             std::lock_guard lock(mutex_);
             state_ = {latest ? UpdatePhase::Available : UpdatePhase::Current, latest,
-                latest ? L"发现 " + wide(latest->tag.substr(prefix.size())) : L"当前已是最新版本"};
+                latest ? L"发现 " + wide(latest->tag.substr(prefix.size())) : L"已是最新版本"};
         } catch (const std::exception& error) {
             set(UpdatePhase::Failed, L"检查更新失败 · " + wide(error.what()));
         }
