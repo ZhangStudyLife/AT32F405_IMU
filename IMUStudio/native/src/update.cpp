@@ -317,30 +317,37 @@ bool Updater::restart() {
 int apply_update(const wchar_t* parent, const fs::path& target) {
     const auto staged = executable_path();
     const fs::path replacement = staged.wstring() + L".new", previous = staged.wstring() + L".old";
-    bool backed_up = false, replaced = false;
+    const auto restart_args = L"--remove-update " + std::to_wstring(GetCurrentProcessId()) + L" " + quote(staged);
+    bool parent_exited = false, backed_up = false, replaced = false;
     try {
         if (!is_staged(staged, target))
             throw std::runtime_error("更新路径无效");
         wait_for_exit(parent);
+        parent_exited = true;
         if (!CopyFileW(staged.c_str(), replacement.c_str(), TRUE) || !CopyFileW(target.c_str(), previous.c_str(), TRUE))
             win_error("准备替换");
         backed_up = true;
         if (const auto error = replace_exe(replacement, target))
             win_error("替换 EXE", error);
         replaced = true;
-        launch(target, L"--remove-update " + std::to_wstring(GetCurrentProcessId()) + L" " + quote(staged));
+        launch(target, restart_args);
         DeleteFileW(previous.c_str());
         return 0;
     } catch (const std::exception& error) {
         DeleteFileW(replacement.c_str());
         auto message = L"更新失败 · " + wide(error.what());
+        bool reopen = parent_exited;
         if (replaced) {
-            if (replace_exe(previous, target))
+            if (replace_exe(previous, target)) {
                 message += L"\n旧版位置 " + previous.wstring();
+                reopen = false;
+            }
         } else if (backed_up) {
             DeleteFileW(previous.c_str());
         }
         MessageBoxW(nullptr, message.c_str(), L"IMUStudio", MB_ICONERROR);
+        if (reopen)
+            launch(target, restart_args);
         return 1;
     }
 }
