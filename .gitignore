@@ -1,2 +1,63 @@
-# Local test captures, timing reports and validation logs
+# Local references, fabrication outputs and test captures
+/reference/datasheets/
+/reference/manufacturing/
 /reference/validation/
+bom/
+ger/
+gerber/
+gerbers/
+*.gbr
+*.gbrjob
+*.drl
+*.g[bt][lmops]
+*.gm[0-9]*
+*.g[0-9]*
+ibom.html
+[Bb][Oo][Mm].csv
+*[-_][Bb][Oo][Mm].csv
+AT32F405_IMU.csv
+AT32F405_IMU_V2.csv
+
+# Only editable KiCad sources, library tables and footprint models belong here
+/hardware*/**
+!/hardware*/**/
+!/hardware*/**/*.kicad_pro
+!/hardware*/**/*.kicad_sch
+!/hardware*/**/*.kicad_pcb
+!/hardware*/**/*.kicad_dru
+!/hardware*/**/*.kicad_sym
+!/hardware*/**/*.kicad_wks
+!/hardware*/**/*.pretty/*.kicad_mod
+!/hardware*/**/fp-lib-table
+!/hardware*/**/sym-lib-table
+!/hardware*/**/*.3dshapes/*.step
+!/hardware*/**/*.3dshapes/*.stp
+!/hardware*/**/*.3dshapes/*.wrl
+
+# KiCad local settings, locks, caches and automatic backups
+*.kicad_prl
+*.kicad_*-bak
+~*.lck
+_autosave-*
+_auto_saved_files_
+*-backups/
+fp-info-cache
+.hq/
+
+# Local CMake builds, Visual Studio state and Python caches
+/build/
+.vs/
+.venv/
+__pycache__/
+.pytest_cache/
+*.py[co]
+
+# Editor, scratch and desktop files
+tmp/
+temp/
+*.tmp
+*.swp
+*~
+.DS_Store
+Thumbs.db
+[Dd]esktop.ini

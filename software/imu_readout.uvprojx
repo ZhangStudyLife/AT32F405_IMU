@@ -339,7 +339,7 @@
               <MiscControls>-std=c99 -ffp-model=precise -fno-math-errno</MiscControls>
               <Define>AT32F405KBU7_4,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Include;C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Firmware/Peripherals/inc;C:/Keil/ARM/PACK/ARM/CMSIS/5.9.0/CMSIS/Core/Include</IncludePath>
+              <IncludePath>&quot;$S/Device/Include&quot;;&quot;$S/Device/Firmware/Peripherals/inc&quot;;./vendor/CMSIS/Core/Include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -396,12 +396,12 @@
             <File>
               <FileName>system_at32f402_405.c</FileName>
               <FileType>1</FileType>
-              <FilePath>C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Source/system_at32f402_405.c</FilePath>
+              <FilePath>$$Device:AT32F405KBU7-4$Device/Source/system_at32f402_405.c</FilePath>
             </File>
             <File>
               <FileName>at32f402_405_crm.c</FileName>
               <FileType>1</FileType>
-              <FilePath>C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Firmware/Peripherals/src/at32f402_405_crm.c</FilePath>
+              <FilePath>$$Device:AT32F405KBU7-4$Device/Firmware/Peripherals/src/at32f402_405_crm.c</FilePath>
             </File>
             <File>
               <FileName>lsm6dsv16x.c</FileName>
@@ -411,12 +411,12 @@
             <File>
               <FileName>at32f402_405_gpio.c</FileName>
               <FileType>1</FileType>
-              <FilePath>C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Firmware/Peripherals/src/at32f402_405_gpio.c</FilePath>
+              <FilePath>$$Device:AT32F405KBU7-4$Device/Firmware/Peripherals/src/at32f402_405_gpio.c</FilePath>
             </File>
             <File>
               <FileName>at32f402_405_spi.c</FileName>
               <FileType>1</FileType>
-              <FilePath>C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Firmware/Peripherals/src/at32f402_405_spi.c</FilePath>
+              <FilePath>$$Device:AT32F405KBU7-4$Device/Firmware/Peripherals/src/at32f402_405_spi.c</FilePath>
             </File>
             <File>
               <FileName>platform.c</FileName>
@@ -451,32 +451,32 @@
             <File>
               <FileName>at32f402_405_dma.c</FileName>
               <FileType>1</FileType>
-              <FilePath>C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Firmware/Peripherals/src/at32f402_405_dma.c</FilePath>
+              <FilePath>$$Device:AT32F405KBU7-4$Device/Firmware/Peripherals/src/at32f402_405_dma.c</FilePath>
             </File>
             <File>
               <FileName>at32f402_405_exint.c</FileName>
               <FileType>1</FileType>
-              <FilePath>C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Firmware/Peripherals/src/at32f402_405_exint.c</FilePath>
+              <FilePath>$$Device:AT32F405KBU7-4$Device/Firmware/Peripherals/src/at32f402_405_exint.c</FilePath>
             </File>
             <File>
               <FileName>at32f402_405_scfg.c</FileName>
               <FileType>1</FileType>
-              <FilePath>C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Firmware/Peripherals/src/at32f402_405_scfg.c</FilePath>
+              <FilePath>$$Device:AT32F405KBU7-4$Device/Firmware/Peripherals/src/at32f402_405_scfg.c</FilePath>
             </File>
             <File>
               <FileName>at32f402_405_tmr.c</FileName>
               <FileType>1</FileType>
-              <FilePath>C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Firmware/Peripherals/src/at32f402_405_tmr.c</FilePath>
+              <FilePath>$$Device:AT32F405KBU7-4$Device/Firmware/Peripherals/src/at32f402_405_tmr.c</FilePath>
             </File>
             <File>
               <FileName>at32f402_405_flash.c</FileName>
               <FileType>1</FileType>
-              <FilePath>C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Firmware/Peripherals/src/at32f402_405_flash.c</FilePath>
+              <FilePath>$$Device:AT32F405KBU7-4$Device/Firmware/Peripherals/src/at32f402_405_flash.c</FilePath>
             </File>
             <File>
               <FileName>at32f402_405_pwc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>C:/Keil/ARM/PACK/ArteryTek/AT32F402_405_DFP/2.1.6/Device/Firmware/Peripherals/src/at32f402_405_pwc.c</FilePath>
+              <FilePath>$$Device:AT32F405KBU7-4$Device/Firmware/Peripherals/src/at32f402_405_pwc.c</FilePath>
             </File>
             <File>
               <FileName>uart.c</FileName>
